@@ -47,12 +47,11 @@ jobs:
 
       - name: Triaje y diagnostico con Claude
         uses: anthropics/claude-code-action@v1
-        env:
-          # Token automatico de Actions, solo para que el CLI `gh` pueda
-          # etiquetar y comentar (alcance limitado por `permissions` arriba)
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Mismo secret ya configurado en el repo y usado por los otros workflows
+          # Mismo secret ya configurado en el repo y usado por los otros workflows.
+          # No se declara env.GH_TOKEN aqui: el action ya exporta GH_TOKEN/GITHUB_TOKEN
+          # internamente (token de la GitHub App de Claude via OIDC) y los subprocesos
+          # de Bash lo heredan; declararlo aqui lo sobreescribiria innecesariamente.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: >-
             --max-turns 25

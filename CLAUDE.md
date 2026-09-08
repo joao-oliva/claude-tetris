@@ -28,8 +28,8 @@ Everything lives in three files with no module system (plain `<script src="game.
 
 Key mechanics in `game.js`:
 
-- **Board model**: a `ROWS × COLS` matrix where each cell is `0` (empty) or a color index `1–7` identifying which piece locked there.
-- **Pieces**: defined as square matrices in `PIECES`. Rotation (`rotateCW`) is done via transpose + row reversal, not by storing pre-rotated states.
+- **Board model**: a `ROWS × COLS` matrix where each cell is `0` (empty) or a color index `1–8` identifying which piece locked there.
+- **Pieces**: defined as square matrices in `PIECES`. Rotation (`rotateCW`) is done via transpose + row reversal, not by storing pre-rotated states. Piece type 8 is the "Nut" — a 3×3 ring with a hollow center (`[[8,8,8],[8,0,8],[8,8,8]]`, `NUT_TYPE` constant). It's rotationally symmetric so rotation is a no-op, and its center cell (a `0`) is invisible to collision/merge, so it can settle over a 1-wide stack poking up through the hole. The hole itself is drawn as a circle (`drawNutHole`) only while the piece is active/ghosted/in the NEXT preview — once locked it's just an ordinary empty board cell, which is what makes lines through it hard to clear.
 - **Collision** (`collide`): checks board bounds and overlap with locked cells for a given shape/offset.
 - **Wall kicks** (`tryRotate`): after rotating, tries offsets `[0, -1, 1, -2, 2]` columns until a non-colliding position is found.
 - **Game loop** (`loop`): driven by `requestAnimationFrame`, accumulates elapsed time (`dropAccum`) and drops the piece one row once it exceeds `dropInterval`.

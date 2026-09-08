@@ -94,7 +94,13 @@ jobs:
                Solo AGREGA labels: no elimines labels que ya puso una persona.
 
             4) Redacta el diagnostico en ESPANOL con este formato exacto en Markdown,
-               guardandolo con Write en el archivo $RUNNER_TEMP/triage.md:
+               guardandolo con Write en el archivo $RUNNER_TEMP/triage.md. El contenido
+               debe estar en formato Markdown valido que GitHub pueda renderizar
+               correctamente en un comentario (encabezados con `#`, listas con `-`,
+               checkboxes con `- [ ]`, negrita con `**texto**`, bloques de codigo con
+               comillas invertidas simples para nombres de archivo/funcion como
+               `game.js:9` y triples para bloques, sin HTML crudo salvo el comentario
+               `<!-- claude-triage -->` ya incluido en la plantilla):
 
                <!-- claude-triage -->
                ## Diagnostico automatico

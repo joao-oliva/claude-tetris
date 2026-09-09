@@ -262,3 +262,134 @@ kbd {
 #restart-btn:hover {
   background: var(--btn-hover-bg);
 }
+
+/* ---- Tabla de records ---- */
+#start-screen {
+  position: absolute;
+}
+
+#start-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--title-color);
+}
+
+.records-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--controls-color);
+}
+
+.records-stats strong {
+  color: var(--value-color);
+}
+
+.records-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 220px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+}
+
+.record-row {
+  display: grid;
+  grid-template-columns: 20px 1fr 60px 32px 40px;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text);
+  background: rgba(127, 127, 127, 0.08);
+}
+
+.record-pos {
+  color: var(--label-color);
+}
+
+.record-score {
+  text-align: right;
+  color: var(--value-color);
+}
+
+.record-lines,
+.record-level {
+  text-align: right;
+  color: var(--controls-color);
+  font-size: 11px;
+}
+
+.record-highlight {
+  background: var(--btn-bg);
+  color: var(--btn-color);
+}
+
+.record-highlight .record-pos,
+.record-highlight .record-score,
+.record-highlight .record-lines,
+.record-highlight .record-level {
+  color: var(--btn-color);
+}
+
+.record-empty {
+  text-align: center;
+  color: var(--label-color);
+  padding: 8px;
+}
+
+#save-score-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#save-score-form.hidden {
+  display: none;
+}
+
+#player-name {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--kbd-border);
+  background: var(--kbd-bg);
+  color: var(--text);
+}
+
+#save-score-btn,
+#play-btn,
+#reset-records-btn {
+  background: var(--btn-bg);
+  color: var(--btn-color);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s;
+}
+
+#save-score-btn:hover,
+#play-btn:hover,
+#reset-records-btn:hover {
+  background: var(--btn-hover-bg);
+}
+
+#reset-records-btn {
+  background: transparent;
+  color: var(--controls-color);
+  border: 1px solid var(--kbd-border);
+  font-size: 11px;
+  padding: 6px 14px;
+}
+
+#reset-records-btn:hover {
+  background: rgba(127, 127, 127, 0.1);
+  color: var(--text);
+}

@@ -44,13 +44,29 @@ const scoreEl = document.getElementById('score');
 const linesEl = document.getElementById('lines');
 const levelEl = document.getElementById('level');
 const tintCountdownEl = document.getElementById('tint-countdown');
+const comboEl = document.getElementById('combo');
 const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeToggle = document.getElementById('theme-toggle');
+const startScreen = document.getElementById('start-screen');
+const playBtn = document.getElementById('play-btn');
+const resetRecordsBtn = document.getElementById('reset-records-btn');
+const recordsListEl = document.getElementById('records-list');
+const recordsListStartEl = document.getElementById('records-list-start');
+const saveScoreForm = document.getElementById('save-score-form');
+const playerNameInput = document.getElementById('player-name');
+const saveScoreBtn = document.getElementById('save-score-btn');
+const bestComboOverlayEl = document.getElementById('best-combo-overlay');
+const maxLinesOverlayEl = document.getElementById('max-lines-overlay');
+const bestComboStartEl = document.getElementById('best-combo-start');
+const maxLinesStartEl = document.getElementById('max-lines-start');
 
-let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId, piecesGenerated;
+const RECORDS_KEY = 'tetris.records';
+const MAX_RECORDS = 5;
+
+let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId, piecesGenerated, combo, bestComboRun;
 
 function baseType(v) { return v % WILD_FLAG; }   // color original de la celda
 function isWild(v) { return v >= WILD_FLAG; }    // celda convertida en comodín
@@ -74,6 +90,91 @@ themeToggle.addEventListener('change', () => {
   applyTheme(isLight);
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
 });
+
+function loadRecords() {
+  try {
+    const raw = localStorage.getItem(RECORDS_KEY);
+    if (!raw) return { scores: [], bestCombo: 0, maxLines: 0 };
+    const parsed = JSON.parse(raw);
+    return {
+      scores: Array.isArray(parsed.scores) ? parsed.scores : [],
+      bestCombo: parsed.bestCombo || 0,
+      maxLines: parsed.maxLines || 0,
+    };
+  } catch (e) {
+    return { scores: [], bestCombo: 0, maxLines: 0 };
+  }
+}
+
+function saveRecordsData(data) {
+  try {
+    localStorage.setItem(RECORDS_KEY, JSON.stringify(data));
+  } catch (e) {
+    // almacenamiento no disponible: se ignora silenciosamente
+  }
+}
+
+function isTopScore(candidateScore) {
+  const data = loadRecords();
+  if (data.scores.length < MAX_RECORDS) return true;
+  return candidateScore > Math.min(...data.scores.map(s => s.score));
+}
+
+function updateGlobalStats(comboVal, linesVal) {
+  const data = loadRecords();
+  if (comboVal > data.bestCombo || linesVal > data.maxLines) {
+    data.bestCombo = Math.max(data.bestCombo, comboVal);
+    data.maxLines = Math.max(data.maxLines, linesVal);
+    saveRecordsData(data);
+  }
+}
+
+function addRecord(entry) {
+  const data = loadRecords();
+  data.scores.push(entry);
+  data.scores.sort((a, b) => b.score - a.score);
+  data.scores = data.scores.slice(0, MAX_RECORDS);
+  data.bestCombo = Math.max(data.bestCombo, entry.combo);
+  data.maxLines = Math.max(data.maxLines, entry.lines);
+  saveRecordsData(data);
+  return { data, entry };
+}
+
+function renderRecords(container, highlightEntry) {
+  if (!container) return;
+  container.innerHTML = '';
+  const data = loadRecords();
+  if (data.scores.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'record-empty';
+    li.textContent = 'Sin registros aún';
+    container.appendChild(li);
+  } else {
+    data.scores.forEach((entry, i) => {
+      const li = document.createElement('li');
+      li.className = 'record-row';
+      if (highlightEntry && entry.score === highlightEntry.score && entry.date === highlightEntry.date) {
+        li.classList.add('record-highlight');
+      }
+      li.innerHTML = `<span class="record-pos">${i + 1}</span>` +
+        `<span class="record-name">${escapeHtml(entry.name)}</span>` +
+        `<span class="record-score">${entry.score.toLocaleString()}</span>` +
+        `<span class="record-lines">${entry.lines}L</span>` +
+        `<span class="record-level">Nv${entry.level}</span>`;
+      container.appendChild(li);
+    });
+  }
+  bestComboStartEl.textContent = data.bestCombo;
+  maxLinesStartEl.textContent = data.maxLines;
+  bestComboOverlayEl.textContent = data.bestCombo;
+  maxLinesOverlayEl.textContent = data.maxLines;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -158,6 +259,7 @@ function clearLines() {
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
     updateHUD();
   }
+  return cleared;
 }
 
 function ghostY() {
@@ -195,9 +297,17 @@ function applyTint() {
 }
 
 function lockPiece() {
-  if (current.type === TINT_TYPE) applyTint();
+  const wasTint = current.type === TINT_TYPE;
+  if (wasTint) applyTint();
   else merge();
-  clearLines();
+  const cleared = clearLines();
+  if (cleared > 0) {
+    combo++;
+    bestComboRun = Math.max(bestComboRun, combo);
+  } else if (!wasTint) {
+    combo = 0;
+  }
+  updateHUD();
   spawn();
 }
 
@@ -215,6 +325,7 @@ function updateHUD() {
   linesEl.textContent = lines;
   levelEl.textContent = level;
   tintCountdownEl.textContent = TINT_INTERVAL - (piecesGenerated % TINT_INTERVAL);
+  comboEl.textContent = combo;
 }
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
@@ -346,7 +457,31 @@ function endGame() {
   cancelAnimationFrame(animId);
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
+  updateGlobalStats(bestComboRun, lines);
+  if (isTopScore(score)) {
+    saveScoreForm.classList.remove('hidden');
+    playerNameInput.value = '';
+  } else {
+    saveScoreForm.classList.add('hidden');
+  }
+  renderRecords(recordsListEl, null);
   overlay.classList.remove('hidden');
+}
+
+function handleSaveScore() {
+  const name = playerNameInput.value.trim() || 'Jugador';
+  const entry = {
+    name,
+    score,
+    lines,
+    level,
+    combo: bestComboRun,
+    date: new Date().toISOString(),
+  };
+  addRecord(entry);
+  saveScoreForm.classList.add('hidden');
+  renderRecords(recordsListEl, entry);
+  renderRecords(recordsListStartEl, entry);
 }
 
 function togglePause() {
@@ -392,6 +527,8 @@ function init() {
   dropAccum = 0;
   lastTime = performance.now();
   piecesGenerated = 0;
+  combo = 0;
+  bestComboRun = 0;
   next = randomPiece();
   spawn();
   updateHUD();
@@ -401,8 +538,9 @@ function init() {
 }
 
 document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
   if (e.code === 'KeyP') { togglePause(); return; }
-  if (paused || gameOver) return;
+  if (!current || paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
       if (!collide(current.shape, current.x - 1, current.y)) current.x--;
@@ -427,4 +565,41 @@ document.addEventListener('keydown', e => {
 
 restartBtn.addEventListener('click', init);
 
-init();
+saveScoreBtn.addEventListener('click', handleSaveScore);
+
+playBtn.addEventListener('click', () => {
+  startScreen.classList.add('hidden');
+  init();
+});
+
+let resetConfirmTimer = null;
+const resetRecordsBtnOriginalText = resetRecordsBtn ? resetRecordsBtn.textContent : '';
+
+function performRecordsReset() {
+  try {
+    localStorage.removeItem(RECORDS_KEY);
+  } catch (e) {
+    // almacenamiento no disponible: se ignora silenciosamente
+  }
+  renderRecords(recordsListStartEl, null);
+  renderRecords(recordsListEl, null);
+  resetRecordsBtn.textContent = resetRecordsBtnOriginalText;
+}
+
+resetRecordsBtn.addEventListener('click', () => {
+  if (resetConfirmTimer) {
+    clearTimeout(resetConfirmTimer);
+    resetConfirmTimer = null;
+    performRecordsReset();
+    return;
+  }
+  resetRecordsBtn.textContent = '¿Seguro? Clic de nuevo';
+  resetConfirmTimer = setTimeout(() => {
+    resetRecordsBtn.textContent = resetRecordsBtnOriginalText;
+    resetConfirmTimer = null;
+  }, 3000);
+});
+
+initTheme();
+renderRecords(recordsListStartEl, null);
+renderRecords(recordsListEl, null);

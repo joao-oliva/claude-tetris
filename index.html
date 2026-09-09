@@ -37,6 +37,10 @@
           <span class="label">TINTE EN</span>
           <span class="value" id="tint-countdown">20</span>
         </div>
+        <div class="panel-section">
+          <span class="label">COMBO</span>
+          <span class="value" id="combo">0</span>
+        </div>
 
         <div class="panel-section">
           <span class="label">NEXT</span>
@@ -60,7 +64,29 @@
       <div class="overlay-box">
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
+        <div class="records-stats">
+          <span>Mejor combo: <strong id="best-combo-overlay">0</strong></span>
+          <span>Líneas máx: <strong id="max-lines-overlay">0</strong></span>
+        </div>
+        <div id="save-score-form" class="hidden">
+          <input type="text" id="player-name" placeholder="Tu nombre" maxlength="16" />
+          <button id="save-score-btn">Guardar puntuación</button>
+        </div>
+        <ol class="records-list" id="records-list"></ol>
         <button id="restart-btn">Reiniciar</button>
+      </div>
+    </div>
+
+    <div id="start-screen" class="overlay">
+      <div class="overlay-box">
+        <p id="start-title">TETRIS</p>
+        <div class="records-stats">
+          <span>Mejor combo: <strong id="best-combo-start">0</strong></span>
+          <span>Líneas máx: <strong id="max-lines-start">0</strong></span>
+        </div>
+        <ol class="records-list" id="records-list-start"></ol>
+        <button id="play-btn">Jugar</button>
+        <button id="reset-records-btn">Borrar records</button>
       </div>
     </div>
   </div>

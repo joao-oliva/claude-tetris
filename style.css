@@ -262,3 +262,35 @@ kbd {
 #restart-btn:hover {
   background: var(--btn-hover-bg);
 }
+
+/* ---- Skins ---- */
+body.skin-neon {
+  --board-bg: #05050a;
+  --board-border: #1a1a2a;
+  --board-shadow: rgba(0, 229, 255, 0.25);
+  --grid-line: #14141f;
+}
+
+body.skin-pastel {
+  --board-bg: #fdf7fb;
+  --board-border: #e8d7e3;
+  --board-shadow: rgba(0, 0, 0, 0.08);
+  --grid-line: #f2e6ee;
+}
+
+body.skin-pixel {
+  --board-bg: #101014;
+  --board-border: #2c2c34;
+  --board-shadow: rgba(0, 0, 0, 0.5);
+  --grid-line: #1c1c22;
+}
+
+#skin-select {
+  background: var(--kbd-bg);
+  color: var(--text);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 12px;
+  font-family: inherit;
+}
